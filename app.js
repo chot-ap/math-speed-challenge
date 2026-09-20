@@ -299,7 +299,7 @@ function generate4DigitComposite() {
       val *= p;
     }
 
-    if (val >= 1000 && val <= 9999) {
+    if (val >= 1000 && val <= 9999 && val % 10 !== 0) {
       const factorsMap = getPrimeFactorsMap(val);
       const keys = Object.keys(factorsMap).map(Number);
       const maxPrime = Math.max(...keys);
@@ -314,16 +314,16 @@ function generate4DigitComposite() {
     }
   }
 
-  // フォールバック: 代表的な素因数（97, 89, 73, 47等を含む）
+  // フォールバック: 1の位が0以外の代表的な素因数
   const fallbacks = [
     { num: 1067, factors: { 11: 1, 97: 1 } },
     { num: 1157, factors: { 13: 1, 89: 1 } },
-    { num: 1460, factors: { 2: 2, 5: 1, 73: 1 } },
     { num: 2115, factors: { 3: 2, 5: 1, 47: 1 } },
     { num: 2328, factors: { 2: 3, 3: 1, 97: 1 } },
-    { num: 1260, factors: { 2: 2, 3: 2, 5: 1, 7: 1 } },
-    { num: 2990, factors: { 2: 1, 5: 1, 13: 1, 23: 1 } },
-    { num: 2301, factors: { 3: 1, 13: 1, 59: 1 } }
+    { num: 2301, factors: { 3: 1, 13: 1, 59: 1 } },
+    { num: 1729, factors: { 7: 1, 13: 1, 19: 1 } },
+    { num: 2173, factors: { 41: 1, 53: 1 } },
+    { num: 1482, factors: { 2: 1, 3: 1, 13: 1, 19: 1 } }
   ];
   const chosen = fallbacks[Math.floor(Math.random() * fallbacks.length)];
   return {
@@ -333,12 +333,21 @@ function generate4DigitComposite() {
   };
 }
 
-// 掛け算問題の生成
+// 1の位が0以外の2桁整数を生成 (11〜99, 末尾0除く)
+function getRandomTwoDigitNoZero() {
+  let n;
+  do {
+    n = Math.floor(Math.random() * 90) + 10;
+  } while (n % 10 === 0);
+  return n;
+}
+
+// 掛け算問題の生成 (1の位が0の数値は排除)
 function generateMultiplicationQuestions(count) {
   const list = [];
   for (let i = 0; i < count; i++) {
-    const a = Math.floor(Math.random() * 90) + 10;
-    const b = Math.floor(Math.random() * 90) + 10;
+    const a = getRandomTwoDigitNoZero();
+    const b = getRandomTwoDigitNoZero();
     list.push({
       type: 'multiplication',
       num1: a,
