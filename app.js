@@ -30,11 +30,11 @@ const MODE_CONFIGS = {
     titleText: '4桁の数値を<br><span class="highlight-text">素因数分解チャレンジ</span>',
     subtitleText: '思考力と数のセンスを磨く5問チャレンジ！',
     ruleQTitle: '全5問の出題',
-    ruleQDesc: '4桁 (1000〜9999) の数を素数のかけ算に分解',
+    ruleQDesc: '4桁 (1000〜9999) の数を素数の積に分解 (最大97の素数まで出題)',
     ruleTimeTitle: '制限時間 1問30秒',
     ruleTimeDesc: 'じっくり考えて計算できる30秒設定',
     ruleTimeoutDesc: '30秒経過で正解を表示し3秒後に次の問題へ',
-    inputPlaceholder: '例: 2^3 * 3^2 * 5 または 2*2*3*5'
+    inputPlaceholder: '例: 2^2 * 5 * 73 または 2*2*5*73'
   }
 };
 
@@ -257,28 +257,54 @@ function compareFactors(mapA, mapB) {
   return true;
 }
 
-// 4桁の解きやすい合成数を生成（小さめの素数の組み合わせ）
+// 100以下の全素数リスト (最大97)
+const PRIMES_UP_TO_97 = [
+  2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 
+  31, 37, 41, 43, 47, 53, 59, 61, 67, 
+  71, 73, 79, 83, 89, 97
+];
+
+const LARGER_PRIMES = [
+  17, 19, 23, 29, 31, 37, 41, 43, 47, 
+  53, 59, 61, 67, 71, 73, 79, 83, 89, 97
+];
+
+// 4桁の合成数を生成（素因数は最大97まで対応）
 function generate4DigitComposite() {
-  const primePool = [2, 2, 2, 2, 3, 3, 3, 5, 5, 7, 7, 11, 13];
-  
   for (let attempt = 0; attempt < 500; attempt++) {
-    // 2, 3, 5 を最低限含めたりして1000〜9999を作る
     let val = 1;
-    const selected = [];
+    // 約75%の確率で 17〜97 の素数をベースに1〜2個含める
+    if (Math.random() < 0.75) {
+      const pLarge = LARGER_PRIMES[Math.floor(Math.random() * LARGER_PRIMES.length)];
+      val *= pLarge;
+    }
     
-    // ベースとして2または3または5を適当に掛ける
+    // 1000〜9999になるまで素数を掛けていく
     while (val < 1000) {
-      const p = primePool[Math.floor(Math.random() * primePool.length)];
-      if (val * p > 9999) break;
+      const pool = val > 300 
+        ? [2, 3, 5, 7, 11] 
+        : [2, 2, 3, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31];
+      const p = pool[Math.floor(Math.random() * pool.length)];
+
+      if (val * p > 9999) {
+        if (val * 2 <= 9999 && val * 2 >= 1000) {
+          val *= 2;
+          break;
+        } else if (val * 3 <= 9999 && val * 3 >= 1000) {
+          val *= 3;
+          break;
+        }
+        break;
+      }
       val *= p;
-      selected.push(p);
     }
 
     if (val >= 1000 && val <= 9999) {
       const factorsMap = getPrimeFactorsMap(val);
-      // 素因数の種類が1つだけ(例: 2^10 = 1024)や素数そのものは避ける
-      const keys = Object.keys(factorsMap);
-      if (keys.length >= 2 && keys.length <= 5) {
+      const keys = Object.keys(factorsMap).map(Number);
+      const maxPrime = Math.max(...keys);
+      // 素因数が2種類以上かつ最大素因数が97以下
+      if (keys.length >= 2 && maxPrime <= 97) {
         return {
           targetNumber: val,
           factorsMap: factorsMap,
@@ -288,14 +314,22 @@ function generate4DigitComposite() {
     }
   }
 
-  // フォールバック: 代表的な綺麗な4桁合成数
-  const fallbacks = [1080, 1260, 1440, 1680, 1800, 2100, 2310, 2520, 2700, 3150, 3360, 4200, 5040, 7560];
-  const val = fallbacks[Math.floor(Math.random() * fallbacks.length)];
-  const factorsMap = getPrimeFactorsMap(val);
+  // フォールバック: 代表的な素因数（97, 89, 73, 47等を含む）
+  const fallbacks = [
+    { num: 1067, factors: { 11: 1, 97: 1 } },
+    { num: 1157, factors: { 13: 1, 89: 1 } },
+    { num: 1460, factors: { 2: 2, 5: 1, 73: 1 } },
+    { num: 2115, factors: { 3: 2, 5: 1, 47: 1 } },
+    { num: 2328, factors: { 2: 3, 3: 1, 97: 1 } },
+    { num: 1260, factors: { 2: 2, 3: 2, 5: 1, 7: 1 } },
+    { num: 2990, factors: { 2: 1, 5: 1, 13: 1, 23: 1 } },
+    { num: 2301, factors: { 3: 1, 13: 1, 59: 1 } }
+  ];
+  const chosen = fallbacks[Math.floor(Math.random() * fallbacks.length)];
   return {
-    targetNumber: val,
-    factorsMap: factorsMap,
-    formattedAnswer: formatFactorsPretty(factorsMap)
+    targetNumber: chosen.num,
+    factorsMap: chosen.factors,
+    formattedAnswer: formatFactorsPretty(chosen.factors)
   };
 }
 
@@ -751,6 +785,11 @@ function initEvents() {
   // テンキー・素数チップのクリックイベント委譲
   document.querySelectorAll('.keypad-btn, .prime-chip').forEach(btn => {
     btn.addEventListener('click', () => {
+      const action = btn.getAttribute('data-action');
+      if (action === 'submit') {
+        handleSubmitAnswer();
+        return;
+      }
       const key = btn.getAttribute('data-key');
       if (key !== null) {
         handleKeypadInput(key);

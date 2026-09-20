@@ -152,15 +152,36 @@
 
         <!-- 素因数分解用拡張キーパッド -->
         <div id="factorization-keypad" class="keypad-factor hidden">
-          <!-- 素数クイック入力バー -->
+          <!-- 素数クイック入力バー (97までの素数) -->
           <div class="prime-shortcuts">
-            <span class="shortcut-label">素数:</span>
-            <button type="button" class="prime-chip" data-key="2">2</button>
-            <button type="button" class="prime-chip" data-key="3">3</button>
-            <button type="button" class="prime-chip" data-key="5">5</button>
-            <button type="button" class="prime-chip" data-key="7">7</button>
-            <button type="button" class="prime-chip" data-key="11">11</button>
-            <button type="button" class="prime-chip" data-key="13">13</button>
+            <span class="shortcut-label">素数(〜97):</span>
+            <div class="prime-chips-wrapper">
+              <button type="button" class="prime-chip" data-key="2">2</button>
+              <button type="button" class="prime-chip" data-key="3">3</button>
+              <button type="button" class="prime-chip" data-key="5">5</button>
+              <button type="button" class="prime-chip" data-key="7">7</button>
+              <button type="button" class="prime-chip" data-key="11">11</button>
+              <button type="button" class="prime-chip" data-key="13">13</button>
+              <button type="button" class="prime-chip" data-key="17">17</button>
+              <button type="button" class="prime-chip" data-key="19">19</button>
+              <button type="button" class="prime-chip" data-key="23">23</button>
+              <button type="button" class="prime-chip" data-key="29">29</button>
+              <button type="button" class="prime-chip" data-key="31">31</button>
+              <button type="button" class="prime-chip" data-key="37">37</button>
+              <button type="button" class="prime-chip" data-key="41">41</button>
+              <button type="button" class="prime-chip" data-key="43">43</button>
+              <button type="button" class="prime-chip" data-key="47">47</button>
+              <button type="button" class="prime-chip" data-key="53">53</button>
+              <button type="button" class="prime-chip" data-key="59">59</button>
+              <button type="button" class="prime-chip" data-key="61">61</button>
+              <button type="button" class="prime-chip" data-key="67">67</button>
+              <button type="button" class="prime-chip" data-key="71">71</button>
+              <button type="button" class="prime-chip" data-key="73">73</button>
+              <button type="button" class="prime-chip" data-key="79">79</button>
+              <button type="button" class="prime-chip" data-key="83">83</button>
+              <button type="button" class="prime-chip" data-key="89">89</button>
+              <button type="button" class="prime-chip" data-key="97">97</button>
+            </div>
           </div>
           <!-- グリッドボタン -->
           <div class="keypad">
@@ -182,7 +203,7 @@
             <button type="button" class="keypad-btn keypad-func" data-key="clear">AC</button>
             <button type="button" class="keypad-btn" data-key="0">0</button>
             <button type="button" class="keypad-btn keypad-op" data-key=" ">Space</button>
-            <button type="button" class="keypad-btn keypad-op" data-key="17">17</button>
+            <button type="button" class="keypad-btn keypad-enter" data-action="submit">決定</button>
           </div>
         </div>
       </form>
