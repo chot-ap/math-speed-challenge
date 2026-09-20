@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="2桁×2桁の掛け算と4桁の素因数分解を制限時間内に解く暗算・計算トレーニングアプリ">
+  <title>計算スピードチャレンジ | 掛け算 ＆ 素因数分解</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <main class="app-container">
+    <!-- スタート画面 -->
+    <section id="start-screen" class="card active">
+      <!-- モード切り替えタブ -->
+      <div class="mode-selector" role="tablist" aria-label="ゲームモード選択">
+        <button type="button" class="mode-tab active" id="tab-multiplication" data-mode="multiplication" role="tab" aria-selected="true">
+          <span class="mode-icon">⚡</span>
+          <span>掛け算 (2桁×2桁)</span>
+        </button>
+        <button type="button" class="mode-tab" id="tab-factorization" data-mode="factorization" role="tab" aria-selected="false">
+          <span class="mode-icon">🧩</span>
+          <span>素因数分解 (4桁)</span>
+        </button>
+      </div>
+
+      <div id="mode-badge" class="badge">Multiplication Attack</div>
+      <h1 id="main-title" class="title">2桁×2桁<br><span class="highlight-text">掛け算スピードアタック</span></h1>
+      <p id="main-subtitle" class="subtitle">瞬発力と暗算力を鍛える10問チャレンジ！</p>
+
+      <!-- ルールカード（選択中のモードにより動的変化） -->
+      <div class="rules-card">
+        <div class="rule-item">
+          <div class="rule-icon" id="rule-q-icon">⚡</div>
+          <div class="rule-text">
+            <strong id="rule-q-title">全10問の出題</strong>
+            <span id="rule-q-desc">2桁 × 2桁 (10〜99) の掛け算のみ</span>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon">⏱️</div>
+          <div class="rule-text">
+            <strong id="rule-time-title">制限時間 1問15秒</strong>
+            <span id="rule-time-desc">スピーディなカウントダウンゲージ表示</span>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon">⌛</div>
+          <div class="rule-text">
+            <strong>タイムアップ時は3秒後へ</strong>
+            <span id="rule-timeout-desc">正解を確認したあと自動で次の問題へ進行</span>
+          </div>
+        </div>
+      </div>
+
+      <button id="start-btn" class="btn btn-primary" type="button">
+        チャレンジ開始
+        <svg class="btn-icon" viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+      </button>
+    </section>
+
+    <!-- クイズ画面 -->
+    <section id="quiz-screen" class="card" aria-live="polite">
+      <!-- ヘッダー情報 -->
+      <header class="quiz-header">
+        <div class="header-left">
+          <span id="quiz-mode-pill" class="mode-pill">⚡ 掛け算</span>
+          <div class="question-progress">
+            <span class="progress-label">QUESTION</span>
+            <span class="progress-number"><span id="current-q">1</span><span class="total-q" id="total-q-display">/10</span></span>
+          </div>
+        </div>
+        <div class="score-display">
+          <span class="score-label">SCORE</span>
+          <span id="current-score" class="score-value">0</span>
+        </div>
+      </header>
+
+      <!-- タイマー部分 -->
+      <div class="timer-wrapper">
+        <div class="timer-bar-container">
+          <div id="timer-progress-bar" class="timer-bar"></div>
+        </div>
+        <div class="timer-info">
+          <span class="timer-icon">⏱️</span>
+          <span id="timer-text" class="timer-text">15.0</span>
+          <span class="timer-unit">秒</span>
+        </div>
+      </div>
+
+      <!-- 問題表示エリア -->
+      <div class="question-card">
+        <div class="formula" id="formula-display">
+          <!-- JSで動的生成 -->
+        </div>
+        <div id="formula-hint" class="formula-hint"></div>
+      </div>
+
+      <!-- フィードバックバナー（正解・不正解・時間切れ） -->
+      <div id="feedback-banner" class="feedback-banner hidden" role="status">
+        <div class="feedback-content">
+          <div id="feedback-icon" class="feedback-icon"></div>
+          <div class="feedback-texts">
+            <div id="feedback-title" class="feedback-title"></div>
+            <div id="feedback-sub" class="feedback-sub"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 回答フォーム & テンキー -->
+      <form id="answer-form" class="answer-form" onsubmit="return false;">
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            id="answer-input" 
+            class="answer-input" 
+            placeholder="答えを入力..." 
+            autocomplete="off"
+            aria-label="計算の答え"
+          >
+          <button type="submit" id="submit-btn" class="btn btn-submit" aria-label="解答を送信">
+            <span>決定</span>
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <!-- オンスクリーン・キーパッド -->
+        <!-- 掛け算用通常テンキー -->
+        <div id="multiplication-keypad" class="keypad">
+          <button type="button" class="keypad-btn" data-key="7">7</button>
+          <button type="button" class="keypad-btn" data-key="8">8</button>
+          <button type="button" class="keypad-btn" data-key="9">9</button>
+          <button type="button" class="keypad-btn" data-key="4">4</button>
+          <button type="button" class="keypad-btn" data-key="5">5</button>
+          <button type="button" class="keypad-btn" data-key="6">6</button>
+          <button type="button" class="keypad-btn" data-key="1">1</button>
+          <button type="button" class="keypad-btn" data-key="2">2</button>
+          <button type="button" class="keypad-btn" data-key="3">3</button>
+          <button type="button" class="keypad-btn keypad-func" data-key="clear">AC</button>
+          <button type="button" class="keypad-btn" data-key="0">0</button>
+          <button type="button" class="keypad-btn keypad-func" data-key="backspace">⌫</button>
+        </div>
+
+        <!-- 素因数分解用拡張キーパッド -->
+        <div id="factorization-keypad" class="keypad-factor hidden">
+          <!-- 素数クイック入力バー -->
+          <div class="prime-shortcuts">
+            <span class="shortcut-label">素数:</span>
+            <button type="button" class="prime-chip" data-key="2">2</button>
+            <button type="button" class="prime-chip" data-key="3">3</button>
+            <button type="button" class="prime-chip" data-key="5">5</button>
+            <button type="button" class="prime-chip" data-key="7">7</button>
+            <button type="button" class="prime-chip" data-key="11">11</button>
+            <button type="button" class="prime-chip" data-key="13">13</button>
+          </div>
+          <!-- グリッドボタン -->
+          <div class="keypad">
+            <button type="button" class="keypad-btn" data-key="7">7</button>
+            <button type="button" class="keypad-btn" data-key="8">8</button>
+            <button type="button" class="keypad-btn" data-key="9">9</button>
+            <button type="button" class="keypad-btn keypad-op" data-key="^">^ (乗)</button>
+
+            <button type="button" class="keypad-btn" data-key="4">4</button>
+            <button type="button" class="keypad-btn" data-key="5">5</button>
+            <button type="button" class="keypad-btn" data-key="6">6</button>
+            <button type="button" class="keypad-btn keypad-op" data-key="*">×</button>
+
+            <button type="button" class="keypad-btn" data-key="1">1</button>
+            <button type="button" class="keypad-btn" data-key="2">2</button>
+            <button type="button" class="keypad-btn" data-key="3">3</button>
+            <button type="button" class="keypad-btn keypad-func" data-key="backspace">⌫</button>
+
+            <button type="button" class="keypad-btn keypad-func" data-key="clear">AC</button>
+            <button type="button" class="keypad-btn" data-key="0">0</button>
+            <button type="button" class="keypad-btn keypad-op" data-key=" ">Space</button>
+            <button type="button" class="keypad-btn keypad-op" data-key="17">17</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- 結果画面 -->
+    <section id="result-screen" class="card">
+      <div id="result-mode-badge" class="badge">Result</div>
+      <h2 class="result-title">チャレンジ結果</h2>
+
+      <div class="result-summary">
+        <div class="score-circle">
+          <span id="final-score" class="final-score-num">0</span>
+          <span class="final-score-total" id="final-total-display">/ 10 問正解</span>
+        </div>
+        <p id="result-evaluation" class="result-evaluation">素晴らしい集中力！</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">正答率</span>
+          <span id="accuracy-rate" class="stat-value">0%</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">平均解答時間</span>
+          <span id="avg-time" class="stat-value">0.0s</span>
+        </div>
+      </div>
+
+      <!-- 履歴詳細リスト -->
+      <div class="history-container">
+        <h3 class="history-title">問題の振り返り</h3>
+        <div class="table-wrapper">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>問題</th>
+                <th>あなたの回答</th>
+                <th>正解</th>
+                <th>時間</th>
+                <th>結果</th>
+              </tr>
+            </thead>
+            <tbody id="history-list">
+              <!-- JSで動的生成 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="result-actions">
+        <button id="restart-btn" class="btn btn-primary" type="button">
+          もう一度挑戦する
+          <svg class="btn-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 4v6h-6"></path>
+            <path d="M1 20v-6h6"></path>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </button>
+        <button id="change-mode-btn" class="btn btn-secondary" type="button">
+          モード選択に戻る
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
